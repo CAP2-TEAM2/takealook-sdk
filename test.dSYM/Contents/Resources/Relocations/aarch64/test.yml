@@ -1,5 +1,5 @@
 ---
 triple:          'arm64-apple-darwin'
-binary-path:     '/Users/ahn/VSCode/c_test/test'
+binary-path:     '/Users/ahn/VSCode/opencv_test/test'
 relocations:     []
 ...
