@@ -3,7 +3,7 @@ import socket
 import struct
 import os
 import numpy as np
-import pose_estimator as pe
+import PoseEstimation as pe
 
 face_mesh = pe.create_face_mesh()
 
@@ -50,14 +50,14 @@ def run_server():
             results = face_mesh.process(rgb)
             if results.multi_face_landmarks:
                 landmarks = results.multi_face_landmarks[0].landmark
+
                 yaw, pitch, roll = pe.get_head_pose(landmarks, image.shape[:2])
                 shoulder_roll = pe.get_shoulder_roll(landmarks, image.shape[:2])
                 shoulder_dis = pe.get_shoulder_distance(landmarks, image.shape[:2])
                 distance = pe.get_face_distance(landmarks, image.shape[:2])
                 blink = pe.get_blink(landmarks, image.shape[:2])
-                print(f"\r🎯 Yaw: {yaw:.2f}, Pitch: {pitch:.2f}, Roll: {roll:.2f}, Shoulder: {shoulder_roll:.2f}, Distance: {distance:.2f}")
-                # result = int(abs(yaw + pitch + roll + shoulder_roll + distance)) % 1000
-                result = int(blink)
+                print(shoulder_dis)
+                result = pe.estimate_final_pose(yaw, pitch, roll, distance, shoulder_roll, shoulder_dis, brightness, blink)
             else:
                 print("❌ 얼굴 인식 실패")
                 result = 999

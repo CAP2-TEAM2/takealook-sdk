@@ -17,7 +17,7 @@ def get_code(yaw, pitch, roll, distance, shoulder_roll, shoulder_dis, brightness
     result[2] = int(shoulder_dis > 0) + 1
     result[3] = int(abs(shoulder_roll - 90) > SHOULDER_DEGREE) + 1
 
-    return int(''.join(map(str, result)))
+    return result
 
 def get_head_pose(landmarks, image_shape):
     image_height, image_width = image_shape
