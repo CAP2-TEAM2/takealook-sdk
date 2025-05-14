@@ -2,6 +2,22 @@ import numpy as np
 import mediapipe as mp
 
 PITCH_OFFSET = -20
+MIN_BRIGHTNESS = 150
+CLOSE_DISTANCE = 30
+SHOULDER_DEGREE = 5
+LOOK_DOWN = 28
+
+def get_code(yaw, pitch, roll, distance, shoulder_roll, shoulder_dis, brightness):
+
+    # too dark / too close / turtle neck / shoulder
+    result = [0, 0, 0, 0]
+
+    result[0] = int(brightness <= MIN_BRIGHTNESS) + 1
+    result[1] = int(distance > CLOSE_DISTANCE) + 1
+    result[2] = int(shoulder_dis > 0) + 1
+    result[3] = int(abs(shoulder_roll - 90) > SHOULDER_DEGREE) + 1
+
+    return result
 
 def get_head_pose(landmarks, image_shape):
     image_height, image_width = image_shape
@@ -30,6 +46,12 @@ def get_shoulder_roll(landmarks, image_shape):
     dx = (right.x - left.x) * image_width
     roll = np.degrees(np.arctan2(dy, dx))
     return roll
+
+def get_shoulder_distance(landmarks, image_shape):
+    left = landmarks[11]
+    right = landmarks[12]
+    dis = (right.x - left.x)
+    return dis
 
 # 얼굴 거리 = 얼굴 세로 길이 기준
 def get_face_distance(landmarks, image_shape):
