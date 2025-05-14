@@ -4,6 +4,7 @@ import struct
 import os
 import numpy as np
 import PoseEstimation as pe
+import time
 
 face_mesh = pe.create_face_mesh()
 
@@ -21,9 +22,7 @@ def receive_image(conn):
     return img_data
 
 def process_image(img_bytes):
-    # 이미지 처리 로직 (예: 얼굴 수 계산, 밝기 분석 등)
-    # 여기선 단순히 크기를 반환
-    return len(img_bytes) % 1000  # 예시로 이미지 크기의 마지막 3자리 정수 반환
+    return len(img_bytes) % 1000  # 예시
 
 def run_server():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -48,7 +47,7 @@ def run_server():
                 blink = pe.get_blink(landmarks, image.shape[:2])
                 print(f"\r🎯 Yaw: {yaw:.2f}, Pitch: {pitch:.2f}, Roll: {roll:.2f}, Shoulder: {shoulder_roll:.2f}, Distance: {distance:.2f}")
                 # result = int(abs(yaw + pitch + roll + shoulder_roll + distance)) % 1000
-                result = int(blink)
+                result = blink
             else:
                 print("❌ 얼굴 인식 실패")
                 result = 999
@@ -58,6 +57,44 @@ def run_server():
 
         conn.close()
 
+def send_webcam_images():
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    cap = cv2.VideoCapture(0)
+    if not cap.isOpened():
+        print("❌ 웹캠 열기 실패")
+        return
+
+    try:
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                print("❌ 프레임 읽기 실패")
+                break
+
+            _, img_encoded = cv2.imencode('.jpg', frame)
+            img_bytes = img_encoded.tobytes()
+
+            try:
+                client.connect(('localhost', 9000))
+                client.send(struct.pack('!I', len(img_bytes)))
+                client.sendall(img_bytes)
+
+                result_data = client.recv(4)
+                result = struct.unpack('!I', result_data)[0]
+                print("📨 서버 응답 결과:", result)
+
+                client.close()
+                client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            except Exception as e:
+                print("❌ 전송 실패:", e)
+
+            time.sleep(0.05)
+
+    finally:
+        cap.release()
+
 if __name__ == "__main__":
     os.environ['GLOG_minloglevel'] = '2'
-    run_server()
+    # run_server()  # 주석 처리
+    send_webcam_images()
