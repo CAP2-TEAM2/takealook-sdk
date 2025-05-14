@@ -2,4 +2,4 @@
 .vscode/
 bin/
 test.dSYM/
-__pycache__/
+socket-server/__pycache__/
