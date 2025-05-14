@@ -1,6 +1,7 @@
 import numpy as np
 import mediapipe as mp
 import time
+from collections import deque
 
 PITCH_OFFSET = -20
 MIN_BRIGHTNESS = 150
@@ -9,9 +10,10 @@ SHOULDER_DEGREE = 5
 LOOK_DOWN = 28
 MIN_BLINK = 3
 
-blink_start_time = time.time()
-blink_count = 0
-blink_rate = 0
+# blink_start_time = time.time()
+# blink_count = 0
+# blink_rate = 0
+blink_times = deque()
 
 def estimate_final_pose(yaw, pitch, roll, distance, shoulder_roll, shoulder_dis, brightness, blink):
 
@@ -71,12 +73,11 @@ def get_face_distance(landmarks, image_shape):
 def create_face_mesh():
     return mp.solutions.face_mesh.FaceMesh(static_image_mode=True, max_num_faces=1, refine_landmarks=True)
 
-    
 def get_blink(landmarks, image_shape):
-    global blink_start_time, blink_count, blink_rate
+    global blink_times
     image_height, image_width = image_shape
 
-    # 왼쪽과 오른쪽 눈의 위쪽/아래쪽 랜드마크
+    # 눈 위/아래 랜드마크
     left_eye_top = landmarks[159]
     left_eye_bottom = landmarks[145]
     right_eye_top = landmarks[386]
@@ -86,21 +87,18 @@ def get_blink(landmarks, image_shape):
     left_eye_height = (left_eye_bottom.y - left_eye_top.y) * image_height
     right_eye_height = (right_eye_bottom.y - right_eye_top.y) * image_height
 
-    threshold = 1.0  # 눈 감김으로 판단할 기준
+    threshold = 1.0  # 눈 감김 판정 기준
+    now = time.time()
 
-    # 눈이 감겼다고 판단되면 깜빡임으로 처리
+    # 눈이 감겼다고 판단되면 기록
     if left_eye_height < threshold and right_eye_height < threshold:
-        blink_count += 1
-        time.sleep(0.1)  # 중복 감지 방지를 위한 짧은 대기
+        # 직전 깜빡임과 0.1초 이상 차이날 때만 추가
+        if not blink_times or now - blink_times[-1] > 0.1:
+            blink_times.append(now)
 
-    current_time = time.time()
-    elapsed_time = current_time - blink_start_time
+    # 큐에서 10초 넘은 오래된 기록 제거
+    while blink_times and now - blink_times[0] > 10.0:
+        blink_times.popleft()
 
-    # 5초가 지나면 blink_rate 갱신 후 초기화
-    if elapsed_time >= 10.0:
-        blink_rate = blink_count
-        blink_count = 0
-        blink_start_time = current_time
-
-    # 5초 이내엔 현재 카운트 반환, 이후엔 5초 동안 센 횟수 반환
-    return blink_count if elapsed_time < 10.0 else blink_rate
+    # 현재 10초 이내 깜빡임 횟수 반환
+    return len(blink_times)

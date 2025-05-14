@@ -58,6 +58,8 @@ def run_server():
                 blink = pe.get_blink(landmarks, image.shape[:2])
                 print(shoulder_dis)
                 result = pe.estimate_final_pose(yaw, pitch, roll, distance, shoulder_roll, shoulder_dis, brightness, blink)
+                # just test for blink
+                # result = blink
             else:
                 print("❌ 얼굴 인식 실패")
                 result = 999
