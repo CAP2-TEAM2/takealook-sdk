@@ -15,16 +15,42 @@ MIN_BLINK = 4
 # blink_rate = 0
 blink_times = deque()
 
+# for init pose average
+INIT_DURATION = 10  # 초기 기준값 측정 시간 (초)
+init_start_time = time.time()
+init_pose_samples = []
+init_done = False
+
 def estimate_final_pose(yaw, pitch, roll, distance, shoulder_roll, shoulder_dis, brightness, blink):
+    global init_start_time, init_pose_samples, init_done
 
-    # too dark / too close / eye / shoulder / chin
+    now = time.time()
+
+    if now - init_start_time < INIT_DURATION:
+        init_pose_samples.append((yaw, pitch, roll, distance, shoulder_roll, shoulder_dis, brightness, blink))
+        print("init ...........")
+        return 0  # 초기에는 측정값 보내지 않음
+    elif not init_done:
+        # 평균 기준값 계산
+        arr = np.array(init_pose_samples)
+        avg_yaw, avg_pitch, avg_roll, avg_dist, avg_shoulder_roll, avg_shoulder_dis, avg_brightness, avg_blink = np.mean(arr, axis=0)
+        estimate_final_pose.reference = {
+            'brightness': avg_brightness,
+            'distance': avg_dist,
+            'blink': avg_blink,
+            'shoulder_roll': avg_shoulder_roll,
+            'roll': avg_roll
+        }
+        init_done = True
+
+    ref = estimate_final_pose.reference
+
     result = [0, 0, 0, 0, 0]
-
-    result[0] = int(brightness <= MIN_BRIGHTNESS) + 1
-    result[1] = int(distance > CLOSE_DISTANCE) + 1
-    result[2] = int(blink <= MIN_BLINK) + 1
+    result[0] = int(brightness <= ref['brightness']) + 1
+    result[1] = int(distance > ref['distance']) + 1
+    result[2] = int(blink <= ref['blink']) + 1
     result[3] = int(abs(shoulder_roll - 90) > SHOULDER_DEGREE) + 1
-    result[4] = int(abs(shoulder_roll - 90) > SHOULDER_DEGREE/2 and abs(roll) > 20) + 1
+    result[4] = int(abs(shoulder_roll - 90) > SHOULDER_DEGREE / 2 and abs(roll) > 20) * (int(shoulder_roll > 90) + 1) + 1
 
     return int(''.join(map(str, result)))
 
