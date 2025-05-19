@@ -6,9 +6,9 @@ from collections import deque
 PITCH_OFFSET = -20
 MIN_BRIGHTNESS = 150
 CLOSE_DISTANCE = 30
-SHOULDER_DEGREE = 5
+SHOULDER_DEGREE = 10
 LOOK_DOWN = 28
-MIN_BLINK = 3
+MIN_BLINK = 4
 
 # blink_start_time = time.time()
 # blink_count = 0
@@ -17,14 +17,14 @@ blink_times = deque()
 
 def estimate_final_pose(yaw, pitch, roll, distance, shoulder_roll, shoulder_dis, brightness, blink):
 
-    # too dark / too close / turtle neck / shoulder / not blinking
+    # too dark / too close / eye / shoulder / chin
     result = [0, 0, 0, 0, 0]
 
     result[0] = int(brightness <= MIN_BRIGHTNESS) + 1
     result[1] = int(distance > CLOSE_DISTANCE) + 1
-    result[2] = int(shoulder_dis > 0) + 1
+    result[2] = int(blink <= MIN_BLINK) + 1
     result[3] = int(abs(shoulder_roll - 90) > SHOULDER_DEGREE) + 1
-    result[4] = int(blink <= MIN_BLINK) + 1
+    result[4] = int(abs(shoulder_roll - 90) > SHOULDER_DEGREE/2 and abs(roll) > 20) + 1
 
     return int(''.join(map(str, result)))
 

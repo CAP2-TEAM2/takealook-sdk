@@ -5,6 +5,13 @@ import os
 import numpy as np
 import PoseEstimation as pe
 
+# Track previous shoulder roll for smoothing
+previous_shoulder_roll = None
+def smooth_value(new_value, previous_value, alpha=0.3):
+    if previous_value is None:
+        return new_value
+    return previous_value * (1 - alpha) + new_value * alpha
+
 face_mesh = pe.create_face_mesh()
 
 def receive_image(conn):
@@ -52,17 +59,18 @@ def run_server():
                 landmarks = results.multi_face_landmarks[0].landmark
 
                 yaw, pitch, roll = pe.get_head_pose(landmarks, image.shape[:2])
-                shoulder_roll = pe.get_shoulder_roll(landmarks, image.shape[:2])
+                global previous_shoulder_roll
+                raw_shoulder_roll = pe.get_shoulder_roll(landmarks, image.shape[:2])
+                shoulder_roll = smooth_value(raw_shoulder_roll, previous_shoulder_roll)
+                previous_shoulder_roll = shoulder_roll
                 shoulder_dis = pe.get_shoulder_distance(landmarks, image.shape[:2])
                 distance = pe.get_face_distance(landmarks, image.shape[:2])
                 blink = pe.get_blink(landmarks, image.shape[:2])
-                print(shoulder_dis)
                 result = pe.estimate_final_pose(yaw, pitch, roll, distance, shoulder_roll, shoulder_dis, brightness, blink)
-                # just test for blink
-                # result = blink
+                print(f"\r{yaw}, {pitch}, {roll}") # debug for blink
             else:
                 print("❌ 얼굴 인식 실패")
-                result = 999
+                result = 99999
             conn.send(struct.pack('!I', result))
         else:
             print("❌ 이미지 수신 실패")
