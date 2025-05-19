@@ -16,19 +16,15 @@ MIN_BLINK = 4
 blink_times = deque()
 
 # for init pose average
-INIT_DURATION = 10  # 초기 기준값 측정 시간 (초)
-init_start_time = time.time()
+INIT_INDEX = 50  # 초기 기준값 인덱스 수
 init_pose_samples = []
 init_done = False
 
 def estimate_final_pose(yaw, pitch, roll, distance, shoulder_roll, shoulder_dis, brightness, blink):
     global init_start_time, init_pose_samples, init_done
 
-    now = time.time()
-
-    if now - init_start_time < INIT_DURATION:
+    if len(init_pose_samples) <= INIT_INDEX:
         init_pose_samples.append((yaw, pitch, roll, distance, shoulder_roll, shoulder_dis, brightness, blink))
-        print("init ...........")
         return 0  # 초기에는 측정값 보내지 않음
     elif not init_done:
         # 평균 기준값 계산
