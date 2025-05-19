@@ -26,8 +26,8 @@ def receive_image(conn):
             return None
         img_data += packet
     img_np = np.frombuffer(img_data, np.uint8)
-    image = cv2.imdecode(img_np, cv2.IMREAD_COLOR)
-    cv2.imwrite('img.png', image)
+    # image = cv2.imdecode(img_np, cv2.IMREAD_COLOR)
+    # cv2.imwrite('img.png', image)
     return img_data
 
 def process_image(img_bytes):
