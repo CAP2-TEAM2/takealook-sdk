@@ -9,10 +9,8 @@ CLOSE_DISTANCE = 30
 SHOULDER_DEGREE = 10
 LOOK_DOWN = 28
 MIN_BLINK = 4
+TURTLE_RANGE = 20
 
-# blink_start_time = time.time()
-# blink_count = 0
-# blink_rate = 0
 blink_times = deque()
 
 # for init pose average
@@ -22,6 +20,7 @@ init_done = False
 
 def estimate_final_pose(yaw, pitch, roll, distance, shoulder_roll, shoulder_dis, brightness, blink):
     global init_start_time, init_pose_samples, init_done
+    # print(shoulder_dis)
 
     if len(init_pose_samples) <= INIT_INDEX:
         init_pose_samples.append((yaw, pitch, roll, distance, shoulder_roll, shoulder_dis, brightness, blink))
@@ -35,7 +34,9 @@ def estimate_final_pose(yaw, pitch, roll, distance, shoulder_roll, shoulder_dis,
             'distance': avg_dist,
             'blink': avg_blink,
             'shoulder_roll': avg_shoulder_roll,
-            'roll': avg_roll
+            'roll': avg_roll,
+            'shoulder_dis': avg_shoulder_dis,
+            'turtle': avg_dist / avg_shoulder_dis * 1000
         }
         init_done = True
 
@@ -45,9 +46,14 @@ def estimate_final_pose(yaw, pitch, roll, distance, shoulder_roll, shoulder_dis,
     result[0] = int(brightness <= ref['brightness']) + 1
     result[1] = int(distance > ref['distance']) + 1
     result[2] = int(blink <= ref['blink']) + 1
-    result[3] = int(abs(shoulder_roll - 90) > SHOULDER_DEGREE) + 1
-    result[4] = int(abs(shoulder_roll - 90) > SHOULDER_DEGREE / 2 and abs(roll) > 20) * (int(shoulder_roll > 90) + 1) + 1
-
+    result[3] = int(abs(shoulder_roll - 90) > SHOULDER_DEGREE / 2 and abs(roll) > 20) * (int(shoulder_roll > 90) + 1) + 1
+    # 거북목 판펼
+    # result[4] = int(turtle <= ref['turtle']) + 1
+    result[4] = int(ref['turtle'] - distance / shoulder_dis * 1000 > TURTLE_RANGE) + 1
+    t = distance/ shoulder_dis * 1000
+    # for turtle neck debug
+    # print(f"avg: {ref['turtle']}, now: {t}")
+    # print(distance/(ref['shoulder_dis'] * 10))
     return int(''.join(map(str, result)))
 
 def get_head_pose(landmarks, image_shape):
@@ -79,9 +85,10 @@ def get_shoulder_roll(landmarks, image_shape):
     return roll
 
 def get_shoulder_distance(landmarks, image_shape):
+    image_width = image_shape[1]
     left = landmarks[11]
     right = landmarks[12]
-    dis = (right.x - left.x) * image_shape[0]
+    dis = (left.x - right.x) * image_width
     return dis
 
 # 얼굴 거리 = 얼굴 세로 길이 기준
@@ -94,6 +101,14 @@ def get_face_distance(landmarks, image_shape):
 
 def create_face_mesh():
     return mp.solutions.face_mesh.FaceMesh(static_image_mode=True, max_num_faces=1, refine_landmarks=True)
+
+def create_pose():
+    mp_pose = mp.solutions.pose
+    return mp_pose.Pose(static_image_mode=False,
+                        model_complexity=1,
+                        enable_segmentation=False,
+                        min_detection_confidence=0.5,
+                        min_tracking_confidence=0.5)
 
 def get_blink(landmarks, image_shape):
     global blink_times
@@ -124,3 +139,6 @@ def get_blink(landmarks, image_shape):
 
     # 현재 10초 이내 깜빡임 횟수 반환
     return len(blink_times)
+
+# def get_turtle(shoulder_dis, face_dis):
+    # return int(shoulder_dis / face_dis * 100000000)

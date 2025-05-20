@@ -63,3 +63,11 @@ def get_face_distance(landmarks, image_shape):
 
 def create_face_mesh():
     return mp.solutions.face_mesh.FaceMesh(static_image_mode=True, max_num_faces=1, refine_landmarks=True)
+
+def create_pose():
+    mp_pose = mp.solutions.pose
+    return mp_pose.Pose(static_image_mode=False,
+                        model_complexity=1,
+                        enable_segmentation=False,
+                        min_detection_confidence=0.5,
+                        min_tracking_confidence=0.5)

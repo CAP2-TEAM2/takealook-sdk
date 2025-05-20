@@ -13,6 +13,7 @@ def smooth_value(new_value, previous_value, alpha=0.3):
     return previous_value * (1 - alpha) + new_value * alpha
 
 face_mesh = pe.create_face_mesh()
+pose = pe.create_pose()
 
 def receive_image(conn):
     size_data = conn.recv(4)
@@ -55,6 +56,7 @@ def run_server():
             image = cv2.imdecode(img_np, cv2.IMREAD_COLOR)
             rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             results = face_mesh.process(rgb)
+            pose_results = pose.process(rgb)
             if results.multi_face_landmarks:
                 landmarks = results.multi_face_landmarks[0].landmark
 
@@ -63,11 +65,17 @@ def run_server():
                 raw_shoulder_roll = pe.get_shoulder_roll(landmarks, image.shape[:2])
                 shoulder_roll = smooth_value(raw_shoulder_roll, previous_shoulder_roll)
                 previous_shoulder_roll = shoulder_roll
-                shoulder_dis = pe.get_shoulder_distance(landmarks, image.shape[:2])
+                # shoulder_dis = pe.get_shoulder_distance(landmarks, image.shape[:2])
+                if pose_results.pose_landmarks:
+                    shoulder_dis = pe.get_shoulder_distance(pose_results.pose_landmarks.landmark, image.shape[:2])
+                else:
+                    shoulder_dis = 0
                 distance = pe.get_face_distance(landmarks, image.shape[:2])
                 blink = pe.get_blink(landmarks, image.shape[:2])
+                # turtle = pe.get_turtle(shoulder_dis, distance)
                 result = pe.estimate_final_pose(yaw, pitch, roll, distance, shoulder_roll, shoulder_dis, brightness, blink)
-                print(f"\r{yaw}, {pitch}, {roll}") # debug for blink
+                # print(f"\r{yaw}, {pitch}, {roll}") # debug for blink
+                # print(f"\r{shoulder_dis}, {distance}, {turtle}")
             else:
                 print("❌ 얼굴 인식 실패")
                 result = 99999
