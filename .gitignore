@@ -5,3 +5,4 @@ test.dSYM/
 socket-server/__pycache__/
 *.png
 .gitrepo
+test.py
