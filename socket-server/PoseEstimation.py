@@ -56,21 +56,9 @@ def estimate_final_pose(yaw, pitch, roll, distance, shoulder_roll, shoulder_dis,
     result[3] = int(abs(shoulder_roll - 90) > SHOULDER_DEGREE / 2 and abs(roll) > 20) * (int(shoulder_roll > 90) + 1) + 1
     # 거북목 판펼
     # result[4] = int(turtle <= ref['turtle']) + 1
-<<<<<<< Updated upstream
-    # result[4] = int(ref['turtle'] - distance / shoulder_dis * 1000 > TURTLE_RANGE) + 1
-    t = distance/ shoulder_dis * 1000
-    turtle_now = int(ref['turtle'] - t > TURTLE_RANGE) + 1
-    turtle_q.append(turtle_now)
-
-    if len(turtle_q) == TURTLE_INDEX and all(v == 2 for v in turtle_q):
-        result[4] = 2
-    else:
-        result[4] = 1
-=======
     result[4] = int(ref['turtle'] - distance / shoulder_dis * 1000 > TURTLE_RANGE) + 1
     
     # t = distance/ shoulder_dis * 1000
->>>>>>> Stashed changes
     # for turtle neck debug
     # print(f"avg: {ref['turtle']}, now: {t}")
     # print(distance/(ref['shoulder_dis'] * 10))
