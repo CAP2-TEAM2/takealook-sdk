@@ -42,9 +42,10 @@ def estimate_final_pose(yaw, pitch, roll, distance, shoulder_roll, shoulder_dis,
 
     ref = estimate_final_pose.reference
 
+    # 밝기 / 얼굴 거리 / 눈 깜빡임 / 어깨, 턱 각도 / 거북목
     result = [0, 0, 0, 0, 0]
-    result[0] = int(brightness <= ref['brightness']) + 1
-    result[1] = int(distance > ref['distance']) + 1
+    result[0] = int(ref['brightness'] / brightness > 1.1) + 1
+    result[1] = int(distance / ref['distance'] > 1.1) + 1
     result[2] = int(blink <= ref['blink']) + 1
     result[3] = int(abs(shoulder_roll - 90) > SHOULDER_DEGREE / 2 and abs(roll) > 20) * (int(shoulder_roll > 90) + 1) + 1
     # 거북목 판펼
