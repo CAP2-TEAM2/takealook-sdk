@@ -47,21 +47,18 @@ def estimate_final_pose(yaw, pitch, roll, distance, shoulder_roll, shoulder_dis,
 
     # 밝기 / 얼굴 거리 / 눈 깜빡임 / 어깨, 턱 각도 / 거북목
     result = [0, 0, 0, 0, 0]
-    result[0] = int(ref['brightness'] / brightness > 1.1) + 1
-    result[1] = int(distance / ref['distance'] > 1.1) + 1
+
+    if brightness == 0: brightness = 1
+    if shoulder_dis == 0: shoulder_dis = 1
+    result[0] = int(ref['brightness'] / brightness > 1.2) + 1
+    result[1] = int(distance / ref['distance'] > 1.15) + 1
     result[2] = int(blink <= ref['blink']) + 1
     result[3] = int(abs(shoulder_roll - 90) > SHOULDER_DEGREE / 2 and abs(roll) > 20) * (int(shoulder_roll > 90) + 1) + 1
     # 거북목 판펼
     # result[4] = int(turtle <= ref['turtle']) + 1
-    # result[4] = int(ref['turtle'] - distance / shoulder_dis * 1000 > TURTLE_RANGE) + 1
-    t = distance/ shoulder_dis * 1000
-    turtle_now = int(ref['turtle'] - t > TURTLE_RANGE) + 1
-    turtle_q.append(turtle_now)
-
-    if len(turtle_q) == TURTLE_INDEX and all(v == 2 for v in turtle_q):
-        result[4] = 2
-    else:
-        result[4] = 1
+    result[4] = int(ref['turtle'] - distance / shoulder_dis * 1000 > TURTLE_RANGE) * int(abs(roll) <= 10) * int(distance / ref['distance'] < 1.15) + 1
+    
+    # t = distance/ shoulder_dis * 1000
     # for turtle neck debug
     # print(f"avg: {ref['turtle']}, now: {t}")
     # print(distance/(ref['shoulder_dis'] * 10))
