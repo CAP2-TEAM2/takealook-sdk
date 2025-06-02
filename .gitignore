@@ -6,3 +6,4 @@ socket-server/__pycache__/
 *.png
 .gitrepo
 test.py
+tags
