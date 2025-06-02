@@ -21,6 +21,12 @@ INIT_INDEX = 50  # 초기 기준값 인덱스 수
 init_pose_samples = []
 init_done = False
 
+# for gesture reference value
+# middle yaw REF is 90 and then +- 20 is L, R REF
+PITCH_REF = 70
+L_REF = 70
+R_REF = 110
+
 def estimate_final_pose(yaw, pitch, roll, distance, shoulder_roll, shoulder_dis, brightness, blink):
     global init_start_time, init_pose_samples, init_done
     # print(shoulder_dis)
@@ -45,8 +51,8 @@ def estimate_final_pose(yaw, pitch, roll, distance, shoulder_roll, shoulder_dis,
 
     ref = estimate_final_pose.reference
 
-    # 밝기 / 얼굴 거리 / 눈 깜빡임 / 어깨, 턱 각도 / 거북목
-    result = [0, 0, 0, 0, 0]
+    # 밝기 / 얼굴 거리 / 눈 깜빡임 / 어깨, 턱 각도 / 거북목 / 제스쳐
+    result = [0, 0, 0, 0, 0, 0]
 
     if brightness == 0: brightness = 1
     if shoulder_dis == 0: shoulder_dis = 1
@@ -57,6 +63,7 @@ def estimate_final_pose(yaw, pitch, roll, distance, shoulder_roll, shoulder_dis,
     # 거북목 판펼
     # result[4] = int(turtle <= ref['turtle']) + 1
     result[4] = int(ref['turtle'] - distance / shoulder_dis * 1000 > TURTLE_RANGE) * int(abs(roll) <= 10) * int(distance / ref['distance'] < 1.15) + 1
+    result[5] = get_gesture(pitch, yaw)
     
     # t = distance/ shoulder_dis * 1000
     # for turtle neck debug
@@ -150,3 +157,18 @@ def get_blink(landmarks, image_shape):
 
 # def get_turtle(shoulder_dis, face_dis):
     # return int(shoulder_dis / face_dis * 100000000)
+
+# get gesture code function
+# 1 : 고개들기
+# 2 : 모니터 왼쪽 주시
+# 3 : 모니터 오른쪽 주시
+def get_gesture(pitch, yaw):
+    if PITCH_REF < pitch: 
+        return (1)
+    elif yaw < L_REF:
+        return (2)
+    elif R_REF < yaw:
+        return (3)
+    else:
+        return (0)
+    
