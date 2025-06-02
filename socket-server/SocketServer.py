@@ -74,9 +74,9 @@ def run_server():
                 blink = pe.get_blink(landmarks, image.shape[:2])
                 # turtle = pe.get_turtle(shoulder_dis, distance)
                 result = pe.estimate_final_pose(yaw, pitch, roll, distance, shoulder_roll, shoulder_dis, brightness, blink)
-                ges = pe.get_gesture(pitch, yaw)
-                print(f"\rgesture = {ges}")
-                print(f"\r{yaw}, {pitch}, {roll}") # debug for blink
+                # ges = pe.get_gesture(pitch, yaw)
+                # print(f"\rgesture = {ges}")
+                # print(f"\r{yaw}, {pitch}, {roll}") # debug for blink
                 # print(f"\r{shoulder_dis}, {distance}, {turtle}")
             else:
                 print("❌ 얼굴 인식 실패")

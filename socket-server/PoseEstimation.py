@@ -51,8 +51,8 @@ def estimate_final_pose(yaw, pitch, roll, distance, shoulder_roll, shoulder_dis,
 
     ref = estimate_final_pose.reference
 
-    # 밝기 / 얼굴 거리 / 눈 깜빡임 / 어깨, 턱 각도 / 거북목
-    result = [0, 0, 0, 0, 0]
+    # 밝기 / 얼굴 거리 / 눈 깜빡임 / 어깨, 턱 각도 / 거북목 / 제스쳐
+    result = [0, 0, 0, 0, 0, 0]
 
     if brightness == 0: brightness = 1
     if shoulder_dis == 0: shoulder_dis = 1
@@ -63,6 +63,7 @@ def estimate_final_pose(yaw, pitch, roll, distance, shoulder_roll, shoulder_dis,
     # 거북목 판펼
     # result[4] = int(turtle <= ref['turtle']) + 1
     result[4] = int(ref['turtle'] - distance / shoulder_dis * 1000 > TURTLE_RANGE) * int(abs(roll) <= 10) * int(distance / ref['distance'] < 1.15) + 1
+    result[5] = get_gesture(pitch, yaw)
     
     # t = distance/ shoulder_dis * 1000
     # for turtle neck debug
