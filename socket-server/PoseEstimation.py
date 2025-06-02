@@ -21,6 +21,12 @@ INIT_INDEX = 50  # 초기 기준값 인덱스 수
 init_pose_samples = []
 init_done = False
 
+# for gesture reference value
+# middle yaw REF is 90 and then +- 20 is L, R REF
+PITCH_REF = 70
+L_REF = 70
+R_REF = 110
+
 def estimate_final_pose(yaw, pitch, roll, distance, shoulder_roll, shoulder_dis, brightness, blink):
     global init_start_time, init_pose_samples, init_done
     # print(shoulder_dis)
@@ -150,3 +156,18 @@ def get_blink(landmarks, image_shape):
 
 # def get_turtle(shoulder_dis, face_dis):
     # return int(shoulder_dis / face_dis * 100000000)
+
+# get gesture code function
+# 1 : 고개들기
+# 2 : 모니터 왼쪽 주시
+# 3 : 모니터 오른쪽 주시
+def get_gesture(pitch, yaw):
+    if PITCH_REF < pitch: 
+        return (1)
+    elif yaw < L_REF:
+        return (2)
+    elif R_REF < yaw:
+        return (3)
+    else:
+        return (0)
+    
