@@ -39,9 +39,11 @@ def process_image(img_bytes):
     return brightness  # 평균 밝기 (0 ~ 255)
 
 def run_server():
+    myport = 9000
+    os.system("lsof -ti:9000 | xargs kill -9")
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    server.bind(('localhost', 9000))
+    server.bind(('localhost', myport))
     server.listen(1)
     print("🟢 서버 대기 중...")
 

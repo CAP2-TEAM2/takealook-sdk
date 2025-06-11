@@ -1,5 +1,6 @@
 import numpy as np
 import mediapipe as mp
+import GestureManager as gm
 import time
 from collections import deque
 
@@ -69,6 +70,9 @@ def estimate_final_pose(yaw, pitch, roll, distance, shoulder_roll, shoulder_dis,
     # for turtle neck debug
     # print(f"avg: {ref['turtle']}, now: {t}")
     # print(distance/(ref['shoulder_dis'] * 10))
+    
+    gm.perform(yaw, pitch, roll, shoulder_roll)
+
     return int(''.join(map(str, result)))
 
 def get_head_pose(landmarks, image_shape):
