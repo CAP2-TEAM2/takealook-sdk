@@ -1,37 +1,30 @@
-import Quartz
-import AppKit
+from pynput.keyboard import Controller, Key
 import time
 
-def press_cmd_tab():
-    # Press Cmd down
-    Quartz.CGEventPost(Quartz.kCGHIDEventTap,
-                       Quartz.CGEventCreateKeyboardEvent(None, AppKit.kVK_Command, True))
-    # Press Tab
-    Quartz.CGEventPost(Quartz.kCGHIDEventTap,
-                       Quartz.CGEventCreateKeyboardEvent(None, AppKit.kVK_Tab, True))
-    time.sleep(0.05)
-    # Release Tab
-    Quartz.CGEventPost(Quartz.kCGHIDEventTap,
-                       Quartz.CGEventCreateKeyboardEvent(None, AppKit.kVK_Tab, False))
-    # Release Cmd
-    Quartz.CGEventPost(Quartz.kCGHIDEventTap,
-                       Quartz.CGEventCreateKeyboardEvent(None, AppKit.kVK_Command, False))
+keyboard = Controller()
 
-def press_cmd_shift_tab():
-    # Press Cmd + Shift down
-    Quartz.CGEventPost(Quartz.kCGHIDEventTap,
-                       Quartz.CGEventCreateKeyboardEvent(None, AppKit.kVK_Command, True))
-    Quartz.CGEventPost(Quartz.kCGHIDEventTap,
-                       Quartz.CGEventCreateKeyboardEvent(None, AppKit.kVK_Shift, True))
-    # Press Tab
-    Quartz.CGEventPost(Quartz.kCGHIDEventTap,
-                       Quartz.CGEventCreateKeyboardEvent(None, AppKit.kVK_Tab, True))
-    time.sleep(0.05)
-    # Release Tab
-    Quartz.CGEventPost(Quartz.kCGHIDEventTap,
-                       Quartz.CGEventCreateKeyboardEvent(None, AppKit.kVK_Tab, False))
-    # Release Shift and Cmd
-    Quartz.CGEventPost(Quartz.kCGHIDEventTap,
-                       Quartz.CGEventCreateKeyboardEvent(None, AppKit.kVK_Shift, False))
-    Quartz.CGEventPost(Quartz.kCGHIDEventTap,
-                       Quartz.CGEventCreateKeyboardEvent(None, AppKit.kVK_Command, False))
+def press(keys):
+    for key in keys:
+        keyboard.press(key)
+    time.sleep(0.1)
+    for key in keys:
+        keyboard.release(key)
+    
+def perform(yaw, pitch, roll, shoulder_roll):
+    is_ready = False
+
+
+    yaw_sens = 25
+
+    if yaw >= 90 + yaw_sens:
+        if is_ready:
+            print("yaw right")
+            press([Key.cmd, Key.tab])
+            is_ready = False
+    elif yaw <= 90 - yaw_sens:
+        if is_ready:
+            print("yaw left")
+            press([Key.cmd, Key.shift, Key.tab])
+            is_ready = False
+    else:
+        is_ready = True
