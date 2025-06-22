@@ -17,7 +17,7 @@ takealook의 웹캠 데이터 수집 및 자세 판별 함수들 제공
 ### For 10 sec.
 For 10 seconds, this server doesn't return anything.  
 This server get a data for avg. of user's pose(roll, yaw, pitch, etc.)  
-The average move a new data by applying ???.  
+The average move a new data by applying Exponential Moving Average.  
 
 ### After 10 sec.
 After 10 seconds, this server returns a result value that `[brightness, face distance, blink per 10 sec., shoulder roll, turtle neck, gesture]`  
